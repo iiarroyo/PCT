@@ -1,0 +1,8 @@
+CREATE TABLE Entries 
+(
+    printDate VARCHAR(20),
+    machineID TINYINT,
+    cardsPrinted INT,
+    
+    PRIMARY KEY(machineID,printDate)
+);

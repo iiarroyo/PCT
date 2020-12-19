@@ -1,0 +1,11 @@
+DB name
+id15714716_pct
+
+DB user
+id15714716_root
+
+DB host
+localhost 
+
+DB password
+~Igt_&RR!o]&o8E|

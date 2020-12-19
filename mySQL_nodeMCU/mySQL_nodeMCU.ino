@@ -7,31 +7,22 @@
 #include <MySQL_Connection.h>
 #include <MySQL_Cursor.h>
 
-#define WIFI_SSID ""
-#define WIFI_PASSWORD ""
+#define WIFI_SSID "INFINITUM430D_2.4"
+#define WIFI_PASSWORD "Y33kRq6cfN"
 
 WiFiClient client;
 MySQL_Connection conn((Client *)&client);
-IPAddress server_addr(192, 168 ,1, 77);  // MySQL server IP
+IPAddress server_addr(192,168,1,91);// MySQL server IP
 char user[] = "client1";                  // MySQL user
 char password[] = "HolaMundo";              // MySQL password
-
-char insertSTMT[]="INSERT into PCT.Registros (printDate,cards,machine) VALUES(CURDATE(),%d,1)";
-char updateSTMT[]="UPDATE Registros SET cards=cards+1 WHERE printDate=CURDATE()";
+char sqlSTMT[100];
 char query[128];
-
-// #define SENSOR_A0 A0
-// #define LED1 D0 //R-Rojo  ... IMPORTANTE: Validar si el LED es de ánodo o de cátodo común
-// #define LED2 D1 //G-Verde
-// #define LED3 D2 //B-Azul
 
 int lecturaSensorA0=0;
 
-void setup() {
+void setup()
+{
     Serial.begin(9600);
-    // pinMode(LED1, OUTPUT);
-    // pinMode(LED2, OUTPUT);
-    // pinMode(LED3, OUTPUT);
     delay(2000);
     Serial.println('\n');
 
@@ -39,41 +30,56 @@ void setup() {
 
     Serial.println("Conectando con la base de datos ");
 
-    while (conn.connect(server_addr, 3306, user, password) != true) {
+    while (conn.connect(server_addr, 3306, user, password) != true)
+    {
         delay(200);
         Serial.print ( "." );
     }
 
     Serial.println("");
     Serial.println("Conectado al servidor SQL!!!");
+    updateDB(1);// 1 = add entry
     delay(10);
 }
 
-void loop() {
-    // lecturaSensorA0=analogRead(SENSOR_A0);
-    // delay(10);
-    int suma = 0;
-    sprintf(query,updateSTMT,suma);
-    Serial.println("Registrando datos.");
-    Serial.println(query);
+void loop()
+{
+    updateDB(0);// 0 = sum to cards counter
 
-    MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
-    cur_mem->execute(query);
-    delete cur_mem;
-
-    if(WiFi.status() != WL_CONNECTED) {
+    if(WiFi.status() != WL_CONNECTED)
+    {
         wifiConnect();
     }
     delay(1000);
 }
 
-void wifiConnect() {
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);  //Conexión a la red WiFi
+void updateDB(int option)
+{
+  // 0 update
+  // 1 insert new entry
+  
+  if(option == 1)
+    char sqlSTMT[]="INSERT into PCT.Registros (printDate,cards,machine) VALUES(CURDATE(),0,1)";
+  else
+    char sqlSTMT[]="UPDATE Registros SET cards=cards+1 WHERE printDate=CURDATE()";
+
+  sprintf(query,sqlSTMT,0);
+  Serial.println("Registrando datos.");
+  Serial.println(query);
+
+  MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
+  cur_mem->execute(query);
+  delete cur_mem;
+}
+void wifiConnect()
+{
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);  // wiifi connection
     Serial.print("Conectado a WiFi --> ");
     Serial.print(WIFI_SSID); Serial.println(" ...");
 
     int teller = 0;
-    while (WiFi.status() != WL_CONNECTED) {  //Esperar a establecer conexión WiFi
+    while (WiFi.status() != WL_CONNECTED)
+    {  //await wifi conection
         delay(1000);
         Serial.print(++teller); Serial.print(' ');
     }
